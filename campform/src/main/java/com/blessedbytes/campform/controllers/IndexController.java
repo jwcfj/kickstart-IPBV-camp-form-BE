@@ -15,10 +15,12 @@ import com.opencsv.exceptions.CsvValidationException;
 import com.opencsv.CSVReader;
 
 import java.io.FileNotFoundException;
+//import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-
+//import java.io.OutputStreamWriter;
+//import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,28 +33,31 @@ import com.blessedbytes.campform.models.Person;
 @Controller
 public class IndexController {
 
-	@RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = "application/json")
+	@RequestMapping(value = "/{cpf}", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
-    public String getOne(@PathVariable String id) throws CsvValidationException, NumberFormatException, IOException, FileNotFoundException {
+    public String getOne(@PathVariable String cpf) throws CsvValidationException, NumberFormatException, IOException, FileNotFoundException {
         ObjectMapper objectMapper = new ObjectMapper();
 		try (CSVReader csvReader = new CSVReader(new FileReader("C:/Users/rormo/Downloads/hellow-world-java-spring/campform/src/main/java/com/blessedbytes/campform/database/test1.csv"))) {
-        String[] nextLine;
-        while ((nextLine = csvReader.readNext()) != null) {
-            if (nextLine[0].equals(id)) {
-                Person person = new Person();
-                person.setId(Long.parseLong(nextLine[0]));
-                person.setPacote(nextLine[1]);
-                person.setName(nextLine[2]);
-                person.setCpf(nextLine[3]);
-                person.setPhoneNumber(nextLine[4]);
-                person.setEmail(nextLine[5]);
-                person.setAllergy(nextLine[6]);
-                person.setTransport(nextLine[7]);
-				String json = objectMapper.writeValueAsString(person);
-                return json;
-            }
-        }
-		return "error";
+			String[] nextLine;
+			while ((nextLine = csvReader.readNext()) != null) {
+				if (nextLine[5].equals(cpf)) {
+					Person person = new Person();
+					person.setName(nextLine[0]);
+					person.setBirthday(nextLine[1]);
+					person.setRg(nextLine[2]);
+					person.setOrgaoExpedidor(nextLine[3]);
+					person.setEstadoOrgaoExpedidor(nextLine[4]);
+					person.setCpf(nextLine[5]);
+					person.setPhoneNumber(nextLine[6]);
+					person.setwhatsapp(nextLine[7]);
+					person.setEmail(nextLine[8]);
+					person.setAllergy(nextLine[9]);
+					person.setPacote(nextLine[10]);
+					String json = objectMapper.writeValueAsString(person);
+					return json;
+				}
+			}
+			return "error";
     	}
     }
 
@@ -65,18 +70,21 @@ public class IndexController {
 			csvReader.readNext(); //TÁ PULANDO A PRIMEIRA LINHA
 			while ((nextLine = csvReader.readNext()) != null) {
 				Person person = new Person();
-				person.setId(Long.parseLong(nextLine[0]));
-				person.setPacote(nextLine[1]);
-				person.setName(nextLine[2]);
-				person.setCpf(nextLine[3]);
-				person.setPhoneNumber(nextLine[4]);
-				person.setEmail(nextLine[5]);
-				person.setAllergy(nextLine[6]);
-				person.setTransport(nextLine[7]);
+				person.setName(nextLine[0]);
+				person.setBirthday(nextLine[1]);
+				person.setRg(nextLine[2]);
+				person.setOrgaoExpedidor(nextLine[3]);
+				person.setEstadoOrgaoExpedidor(nextLine[4]);
+				person.setCpf(nextLine[5]);
+				person.setPhoneNumber(nextLine[6]);
+				person.setwhatsapp(nextLine[7]);
+				person.setEmail(nextLine[8]);
+				person.setAllergy(nextLine[9]);
+				person.setPacote(nextLine[10]);
 	
 				allPersons.add(person);
 			}
-		return allPersons;
+			return allPersons;
 		}
     }
 
@@ -84,20 +92,24 @@ public class IndexController {
 	public String post(@RequestBody String json) throws JsonProcessingException, IOException, CsvValidationException{
 			ObjectMapper objectMapper = new ObjectMapper();
 			JsonNode jsonNode = objectMapper.readTree(json);
-			if(this.findId(jsonNode.get("id").asText())){
+			if(this.findCpf(jsonNode.get("cpf").asText())){
 			}
 			else{
 				String[] csvData = {
-					jsonNode.get("id").asText(),
-					jsonNode.get("pacote").asText(),
 					jsonNode.get("name").asText(),
+					jsonNode.get("birthday").asText(),
+					jsonNode.get("rg").asText(),
+					jsonNode.get("orgaoExpedidor").asText(),
+					jsonNode.get("estadoOrgaoExpedidor").asText(),
 					jsonNode.get("cpf").asText(),
 					jsonNode.get("phoneNumber").asText(),
+					jsonNode.get("whatsapp").asText(),
 					jsonNode.get("email").asText(),
 					jsonNode.get("allergy").asText(),
-					jsonNode.get("transport").asText()
+					jsonNode.get("pacote").asText()
 				};
-				try (CSVWriter writer = new CSVWriter(new FileWriter("C:/Users/rormo/Downloads/hellow-world-java-spring/campform/src/main/java/com/blessedbytes/campform/database/test1.csv", true))) {
+				//try (CSVWriter writer = new CSVWriter(new OutputStreamWriter(new FileOutputStream("C:/Users/rormo/Downloads/hellow-world-java-spring/campform/src/main/java/com/blessedbytes/campform/database/test1.csv", true), StandardCharsets.UTF_8))) {
+				try (CSVWriter writer = new CSVWriter(new FileWriter("C:/Users/rormo/Downloads/hellow-world-java-spring/campform/src/main/java/com/blessedbytes/campform/database/test1.csv", true))){
 					writer.writeNext(csvData);
 				}
 				return "post";
@@ -105,14 +117,14 @@ public class IndexController {
 			return "post";
 	}
 
-	@RequestMapping(value = "/{id}", method=RequestMethod.DELETE)
-	public String delete(@PathVariable String id) throws FileNotFoundException, IOException, CsvValidationException{
-		if(this.findId(id)){
+	@RequestMapping(value = "/{cpf}", method=RequestMethod.DELETE)
+	public String delete(@PathVariable String cpf) throws FileNotFoundException, IOException, CsvValidationException{
+		if(this.findCpf(cpf)){
 			List<String[]> newCsvData = new ArrayList<>();
 			try (CSVReader csvReader = new CSVReader(new FileReader("C:/Users/rormo/Downloads/hellow-world-java-spring/campform/src/main/java/com/blessedbytes/campform/database/test1.csv"))) {
 				String[] nextLine;
 				while ((nextLine = csvReader.readNext()) != null) {
-					if (!nextLine[0].equals(id)) {
+					if (!nextLine[5].equals(cpf)) {
 						newCsvData.add(nextLine);
 					}
 				}
@@ -125,12 +137,12 @@ public class IndexController {
 		return "delete";
 	}
 
-	private boolean findId(String id) throws FileNotFoundException, IOException, CsvValidationException{
+	private boolean findCpf(String cpf) throws FileNotFoundException, IOException, CsvValidationException{
 
 		try (CSVReader csvReader = new CSVReader(new FileReader("C:/Users/rormo/Downloads/hellow-world-java-spring/campform/src/main/java/com/blessedbytes/campform/database/test1.csv"))) {
 			String[] nextLine;
 			while ((nextLine = csvReader.readNext()) != null) {
-				if (nextLine[0].equals(id)) {
+				if (nextLine[5].equals(cpf)) {
 					return true;
 				}
 			}
