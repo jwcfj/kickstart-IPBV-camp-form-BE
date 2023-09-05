@@ -38,9 +38,10 @@ public class IndexController {
 	private static final String CSV_FILE_PATH = "./src/main/java/com/blessedbytes/campform/database/test1.csv";
 
 	@RequestMapping(value = "/{cpf}", method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
-    public ResponseEntity<String> getOne(@PathVariable String cpf) throws CsvValidationException, IOException, FileNotFoundException, JsonProcessingException{
-        ObjectMapper objectMapper = new ObjectMapper();
+	@ResponseBody
+	public ResponseEntity<String> getOne(@PathVariable String cpf)
+			throws CsvValidationException, IOException, FileNotFoundException, JsonProcessingException {
+		ObjectMapper objectMapper = new ObjectMapper();
 		try (CSVReader csvReader = new CSVReader(new FileReader(CSV_FILE_PATH))) {
 			String[] nextLine;
 			while ((nextLine = csvReader.readNext()) != null) {
@@ -61,24 +62,25 @@ public class IndexController {
 					return ResponseEntity.status(HttpStatus.OK).body(json);
 				}
 			}
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no CPF: "+cpf);
-    	} catch (FileNotFoundException e1){
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no CPF: " + cpf);
+		} catch (FileNotFoundException e1) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REQUEST_INTERNAL_ERROR);
-		} catch (IOException e2){
+		} catch (IOException e2) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REQUEST_INTERNAL_ERROR);
-		} catch (CsvValidationException e3){
+		} catch (CsvValidationException e3) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REQUEST_INTERNAL_ERROR);
 		}
-    }
+	}
 
 	@RequestMapping(value = "/", method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
-    public ResponseEntity<String> getAll() throws FileNotFoundException, IOException, CsvValidationException, JsonProcessingException {
+	@ResponseBody
+	public ResponseEntity<String> getAll()
+			throws FileNotFoundException, IOException, CsvValidationException, JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();
-        List<Person> allPersons = new ArrayList<>();
-        try (CSVReader csvReader = new CSVReader(new FileReader(CSV_FILE_PATH))) {
+		List<Person> allPersons = new ArrayList<>();
+		try (CSVReader csvReader = new CSVReader(new FileReader(CSV_FILE_PATH))) {
 			String[] nextLine;
-			csvReader.readNext(); //TÁ PULANDO A PRIMEIRA LINHA
+			csvReader.readNext(); // TÁ PULANDO A PRIMEIRA LINHA
 			while ((nextLine = csvReader.readNext()) != null) {
 				Person person = new Person();
 				person.setName(nextLine[0]);
@@ -92,31 +94,31 @@ public class IndexController {
 				person.setEmail(nextLine[8]);
 				person.setAllergy(nextLine[9]);
 				person.setPacote(nextLine[10]);
-	
+
 				allPersons.add(person);
 			}
 			return ResponseEntity.status(HttpStatus.OK).body(objectMapper.writeValueAsString(allPersons));
-		} catch (FileNotFoundException e1){
+		} catch (FileNotFoundException e1) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REQUEST_INTERNAL_ERROR);
-		} catch (JsonProcessingException e2){
+		} catch (JsonProcessingException e2) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REQUEST_INTERNAL_ERROR);
-	 	} catch (IOException e3){
+		} catch (IOException e3) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REQUEST_INTERNAL_ERROR);
-		} catch (CsvValidationException e4){
+		} catch (CsvValidationException e4) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REQUEST_INTERNAL_ERROR);
 		}
-    }
+	}
 
 	@RequestMapping(value = "/", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<String> post(@RequestBody String json) throws JsonProcessingException, JsonMappingException, IOException, CsvValidationException{
-			ObjectMapper objectMapper = new ObjectMapper();
-			try{
-				JsonNode jsonNode = objectMapper.readTree(json);
-				if(this.findCpf(jsonNode.get("cpf").asText())){
-					return ResponseEntity.status(HttpStatus.FORBIDDEN).body("CPF already exists.");
-				}
-				else{
-					String[] csvData = {
+	public ResponseEntity<String> post(@RequestBody String json)
+			throws JsonProcessingException, JsonMappingException, IOException, CsvValidationException {
+		ObjectMapper objectMapper = new ObjectMapper();
+		try {
+			JsonNode jsonNode = objectMapper.readTree(json);
+			if (this.findCpf(jsonNode.get("cpf").asText())) {
+				return ResponseEntity.status(HttpStatus.FORBIDDEN).body("CPF already exists.");
+			} else {
+				String[] csvData = {
 						jsonNode.get("name").asText(),
 						jsonNode.get("birthday").asText(),
 						jsonNode.get("rg").asText(),
@@ -128,26 +130,27 @@ public class IndexController {
 						jsonNode.get("email").asText(),
 						jsonNode.get("allergy").asText(),
 						jsonNode.get("pacote").asText()
-					};
-					try (CSVWriter writer = new CSVWriter(new FileWriter(CSV_FILE_PATH, true))){
-						writer.writeNext(csvData);
-					} catch (IOException e1) {
-						return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REGISTRATION_INTERNAL_ERROR);
-					}
-					return ResponseEntity.status(HttpStatus.CREATED).body("Registered correctly.");
+				};
+				try (CSVWriter writer = new CSVWriter(new FileWriter(CSV_FILE_PATH, true))) {
+					writer.writeNext(csvData);
+				} catch (IOException e1) {
+					return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REGISTRATION_INTERNAL_ERROR);
 				}
-			} catch (CsvValidationException e2){
-				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REGISTRATION_INTERNAL_ERROR);
-			} catch (JsonMappingException e3){
-				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REGISTRATION_INTERNAL_ERROR);
-			} catch (JsonProcessingException e4){
-				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REGISTRATION_INTERNAL_ERROR);
+				return ResponseEntity.status(HttpStatus.CREATED).body("Registered correctly.");
 			}
+		} catch (CsvValidationException e2) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REGISTRATION_INTERNAL_ERROR);
+		} catch (JsonMappingException e3) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REGISTRATION_INTERNAL_ERROR);
+		} catch (JsonProcessingException e4) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REGISTRATION_INTERNAL_ERROR);
+		}
 	}
 
-	@RequestMapping(value = "/{cpf}", method=RequestMethod.DELETE)
-	public ResponseEntity<String> delete(@PathVariable String cpf) throws FileNotFoundException, IOException, CsvValidationException{
-		if(this.findCpf(cpf)){
+	@RequestMapping(value = "/{cpf}", method = RequestMethod.DELETE)
+	public ResponseEntity<String> delete(@PathVariable String cpf)
+			throws FileNotFoundException, IOException, CsvValidationException {
+		if (this.findCpf(cpf)) {
 			List<String[]> newCsvData = new ArrayList<>();
 			try (CSVReader csvReader = new CSVReader(new FileReader(CSV_FILE_PATH))) {
 				String[] nextLine;
@@ -156,24 +159,24 @@ public class IndexController {
 						newCsvData.add(nextLine);
 					}
 				}
-			} catch (CsvValidationException e1){
+			} catch (CsvValidationException e1) {
 				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REQUEST_INTERNAL_ERROR);
-			} catch (FileNotFoundException e2){
+			} catch (FileNotFoundException e2) {
 				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REQUEST_INTERNAL_ERROR);
-			} catch (IOException e3){
+			} catch (IOException e3) {
 				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REQUEST_INTERNAL_ERROR);
 			}
 			try (CSVWriter csvWriter = new CSVWriter(new FileWriter(CSV_FILE_PATH))) {
 				csvWriter.writeAll(newCsvData);
-			} catch (IOException e4){
+			} catch (IOException e4) {
 				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(REQUEST_INTERNAL_ERROR);
 			}
 			return ResponseEntity.status(HttpStatus.OK).body("CPF correctly deleted.");
 		}
-		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no CPF: "+cpf);
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no CPF: " + cpf);
 	}
 
-	private boolean findCpf(String cpf) throws FileNotFoundException, IOException, CsvValidationException{
+	private boolean findCpf(String cpf) throws FileNotFoundException, IOException, CsvValidationException {
 		try (CSVReader csvReader = new CSVReader(new FileReader(CSV_FILE_PATH))) {
 			String[] nextLine;
 			while ((nextLine = csvReader.readNext()) != null) {
