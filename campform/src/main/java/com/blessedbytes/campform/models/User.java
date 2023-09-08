@@ -73,9 +73,6 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // TODO Auto-generated method stub
-        // FAZ O LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL
-        // block ou não block
         if (this.role == UserRole.ADMIN)
             return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
 

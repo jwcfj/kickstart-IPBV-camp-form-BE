@@ -13,6 +13,7 @@ public class Person {
     private String email;
     private String allergy;
     private String pacote;
+    private String payment;
     
     // Getter and Setter methods for 'name'
     public String getName() {
@@ -111,6 +112,15 @@ public class Person {
     
     public void setPacote(String pacote) {
         this.pacote = pacote;
+    }
+
+    // Getter and Setter methods for 'payment'
+    public String getPayment(){
+        return payment;
+    }
+
+    public void setPayment(String payment){
+        this.payment = payment;
     }
 
 }
