@@ -100,7 +100,8 @@ public class IndexController {
 		Map<String, Object> response = new HashMap<>();
 		try (CSVReader csvReader = new CSVReader(new FileReader(CSV_FILE_PATH))) {
 			String[] nextLine;
-			csvReader.readNext(); // TÁ PULANDO A PRIMEIRA LINHA
+			String[] tableHeader;
+			tableHeader = csvReader.readNext(); // TÁ PULANDO A PRIMEIRA LINHA
 			while ((nextLine = csvReader.readNext()) != null) {
 				Person person = new Person();
 				person.setName(nextLine[0]);
@@ -119,6 +120,7 @@ public class IndexController {
 				allPersons.add(person);
 			}
 			response.put("request", "OK");
+			response.put("header", objectMapper.writeValueAsString(tableHeader));
 			response.put("data", objectMapper.writeValueAsString(allPersons));
 			return ResponseEntity.status(HttpStatus.OK).body(response);
 		} catch (FileNotFoundException e1) {
@@ -244,6 +246,55 @@ public class IndexController {
 			response.put("data", "");
 			return ResponseEntity.status(HttpStatus.OK).body(response);
 		}
+		response.put("request", "There is no CPF: " + cpf);
+		response.put("data", "");
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+	}
+
+	@RequestMapping(value = "/tabela-inscritos/{cpf}", method = RequestMethod.PUT)
+	public ResponseEntity<Object> update(@PathVariable String cpf, @RequestBody String json)
+			throws FileNotFoundException, IOException, CsvValidationException, JsonProcessingException, JsonMappingException {
+		Map<String, Object> response = new HashMap<>();
+		if (this.findCpf(cpf)) {
+			List<String[]> newCsvData = new ArrayList<>();
+			ObjectMapper objectMapper = new ObjectMapper();
+
+			try (CSVReader csvReader = new CSVReader(new FileReader(CSV_FILE_PATH))) {
+				JsonNode jsonNode = objectMapper.readTree(json);
+				String[] nextLine;
+				while ((nextLine = csvReader.readNext()) != null) {
+					if (nextLine[5].equals(cpf)) {
+						nextLine[11] = jsonNode.get("payment").asText();
+					}
+					newCsvData.add(nextLine);
+				}
+			} catch (CsvValidationException e1) {
+				response.put("request", REQUEST_INTERNAL_ERROR);
+				response.put("data", "");
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+			} catch (FileNotFoundException e2) {
+				response.put("request", REQUEST_INTERNAL_ERROR);
+				response.put("data", "");
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+			} catch (IOException e3) {
+				response.put("request", REQUEST_INTERNAL_ERROR);
+				response.put("data", "");
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+			}
+
+			try (CSVWriter csvWriter = new CSVWriter(new FileWriter(CSV_FILE_PATH))) {
+				csvWriter.writeAll(newCsvData);
+			} catch (IOException e4) {
+				response.put("request", REQUEST_INTERNAL_ERROR);
+				response.put("data", "");
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+			}
+
+			response.put("request", "CPF correctly updated.");
+			response.put("data", "");
+			return ResponseEntity.status(HttpStatus.OK).body(response);
+		}
+
 		response.put("request", "There is no CPF: " + cpf);
 		response.put("data", "");
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
