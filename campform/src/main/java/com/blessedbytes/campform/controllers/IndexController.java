@@ -39,7 +39,8 @@ public class IndexController {
 
 	private static final String REGISTRATION_INTERNAL_ERROR = "Unable to complete registration.";
 	private static final String REQUEST_INTERNAL_ERROR = "Unable to complete request.";
-	private static final String CSV_FILE_PATH = "./src/main/java/com/blessedbytes/campform/database/test1.csv";
+	@Value("${local.file.path}")
+	private String CSV_FILE_PATH;
 	@Value("${secretkey.pagarme}")
     private String username;
 
@@ -172,6 +173,7 @@ public class IndexController {
 					response.put("data", "");
 					return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 				}
+				//GoogleDriveService.uploadWithConversion();
 				if(jsonNode.get("payment").asText().equals("presencial")){
 					response.put("registration", "Registered correctly");
 					response.put("data", "");
