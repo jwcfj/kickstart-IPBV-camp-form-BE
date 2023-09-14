@@ -14,6 +14,7 @@ public class Person {
     private String allergy;
     private String pacote;
     private String payment;
+    private String aggregate;
     
     // Getter and Setter methods for 'name'
     public String getName() {
@@ -121,6 +122,15 @@ public class Person {
 
     public void setPayment(String payment){
         this.payment = payment;
+    }
+
+    // Getter and Setter methods for 'name'
+    public String getAggregate() {
+        return aggregate;
+    }
+    
+    public void setAggregate(String aggregate) {
+        this.aggregate = aggregate;
     }
 
 }

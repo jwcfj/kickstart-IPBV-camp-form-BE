@@ -67,6 +67,7 @@ public class IndexController {
 					person.setAllergy(nextLine[9]);
 					person.setPacote(nextLine[10]);
 					person.setPayment(nextLine[11]);
+					person.setAggregate(nextLine[12]);
 
 					response.put("request", "OK");
 					response.put("data", objectMapper.writeValueAsString(person));
@@ -116,6 +117,7 @@ public class IndexController {
 				person.setAllergy(nextLine[9]);
 				person.setPacote(nextLine[10]);
 				person.setPayment(nextLine[11]);
+				person.setAggregate(nextLine[12]);
 
 				allPersons.add(person);
 			}
@@ -158,15 +160,15 @@ public class IndexController {
 						jsonNode.get("name").asText(),
 						jsonNode.get("birthday").asText(),
 						jsonNode.get("rg").asText(),
-						jsonNode.get("orgaoExpedidor").asText(),
-						jsonNode.get("estadoOrgaoExpedidor").asText(),
+						jsonNode.get("rgShipper").asText(),
+						jsonNode.get("rgShipperState").asText(),
 						jsonNode.get("cpf").asText(),
-						jsonNode.get("phoneNumber").asText(),
-						jsonNode.get("whatsapp").asText(),
+						jsonNode.get("cellPhone").asText(),
+						jsonNode.get("isWhatsApp").asText(),
 						jsonNode.get("email").asText(),
-						jsonNode.get("allergy").asText(),
-						jsonNode.get("pacote").asText(),
-						jsonNode.get("payment").asText()
+						jsonNode.get("hasAllergy").asText()+" ---- "+jsonNode.get("allergy").asText(),
+						jsonNode.get("package").asText(),
+						jsonNode.get("formPayment").get("formPayment").asText()
 				};
 				try (CSVWriter writer = new CSVWriter(new FileWriter(CSV_FILE_PATH, true))) {
 					writer.writeNext(csvData);
@@ -176,7 +178,7 @@ public class IndexController {
 					return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 				}
 				//GoogleDriveService.uploadWithConversion();
-				if(jsonNode.get("payment").asText().equals("presencial")){
+				if(jsonNode.get("formPayment").get("formPayment").asText().equals("inPerson")){
 					response.put("registration", "Registered correctly");
 					response.put("data", "");
 					return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -264,7 +266,8 @@ public class IndexController {
 				String[] nextLine;
 				while ((nextLine = csvReader.readNext()) != null) {
 					if (nextLine[5].equals(cpf)) {
-						nextLine[11] = jsonNode.get("payment").asText();
+						//nextLine[11] = jsonNode.get("formPayment").asText();
+						nextLine[11] = "PAGO";
 					}
 					newCsvData.add(nextLine);
 				}
